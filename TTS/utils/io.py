@@ -4,6 +4,7 @@ import json
 import yaml
 import pickle as pickle_tts
 from shutil import copyfile
+import platform
 
 
 class RenamingUnpickler(pickle_tts.Unpickler):
@@ -22,8 +23,12 @@ class AttrDict(dict):
 
 def read_json_with_comments(json_path):
     # fallback to json
-    with open(json_path, "r") as f:
-        input_str = f.read()
+    if platform.system()=="Windows":
+        with open(json_path, "r",encoding="utf-8_sig") as f:
+            input_str = f.read()
+    else:
+        with open(json_path, "r") as f:
+            input_str = f.read()
     # handle comments
     input_str = re.sub(r'\\\n', '', input_str)
     input_str = re.sub(r'//.*\n', '\n', input_str)
@@ -40,8 +45,12 @@ def load_config(config_path: str) -> AttrDict:
 
     ext = os.path.splitext(config_path)[1]
     if ext in (".yml", ".yaml"):
-        with open(config_path, "r") as f:
-            data = yaml.safe_load(f)
+        if platform.system()=="Windows":
+            with open(config_path, "r",encoding="utf-8_sig") as f:
+                data = yaml.safe_load(f)
+        else:
+            with open(config_path, "r") as f:
+                data = yaml.safe_load(f)
     else:
         data = read_json_with_comments(config_path)
     config.update(data)
